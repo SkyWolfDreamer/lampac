@@ -1116,7 +1116,7 @@
       ];
     }
 
-    var DORAMA_SOURCE_VERSION = '2026-05-16-more-safe';
+    var DORAMA_SOURCE_VERSION = '2026-05-16-cub-more';
 
     function prepareDoramaPage(json, url, page, title) {
       if (!json) json = { results: [] };
@@ -1147,25 +1147,6 @@
       tmdb.list({ url: url, page: page || 1, source: 'tmdb' }, function(json) {
         oncomplite(prepareDoramaPage(json, url, page || 1, title));
       }, onerror);
-    }
-
-    function doramaList(params, oncomplite, onerror) {
-      var requestedPage = params.page || 1;
-      var fallback = function() {
-        if (requestedPage > 1) {
-          doramaLoad(params.url, 1, oncomplite, onerror, params.title);
-        } else if (onerror) {
-          onerror();
-        }
-      };
-
-      doramaLoad(params.url, requestedPage, function(json) {
-        if (json.results && json.results.length) {
-          oncomplite(json);
-        } else {
-          fallback();
-        }
-      }, fallback, params.title);
     }
 
     function registerDoramaSource() {
@@ -1207,7 +1188,7 @@
           });
         },
         list: function(params, oncomplite, onerror) {
-          doramaList(params, oncomplite, onerror);
+          doramaLoad(params.url, params.page, oncomplite, onerror, params.title);
         },
         menuCategory: function(params, oncomplite) {
           oncomplite(doramaSections().map(function(section) {

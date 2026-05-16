@@ -95,7 +95,7 @@ function lampacDoramaSections() {
   ];
 }
 
-var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-more-safe';
+var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-cub-more';
 
 function prepareLampacDoramaPage(json, url, page, title) {
   if (!json) json = { results: [] };
@@ -126,25 +126,6 @@ function lampacDoramaLoad(url, page, oncomplite, onerror, title) {
   tmdb.list({ url: url, page: page || 1, source: 'tmdb' }, function(json) {
     oncomplite(prepareLampacDoramaPage(json, url, page || 1, title));
   }, onerror);
-}
-
-function lampacDoramaList(params, oncomplite, onerror) {
-  var requestedPage = params.page || 1;
-  var fallback = function() {
-    if (requestedPage > 1) {
-      lampacDoramaLoad(params.url, 1, oncomplite, onerror, params.title);
-    } else if (onerror) {
-      onerror();
-    }
-  };
-
-  lampacDoramaLoad(params.url, requestedPage, function(json) {
-    if (json.results && json.results.length) {
-      oncomplite(json);
-    } else {
-      fallback();
-    }
-  }, fallback, params.title);
 }
 
 function registerLampacDoramaSource() {
@@ -186,7 +167,7 @@ function registerLampacDoramaSource() {
       });
     },
     list: function(params, oncomplite, onerror) {
-      lampacDoramaList(params, oncomplite, onerror);
+      lampacDoramaLoad(params.url, params.page, oncomplite, onerror, params.title);
     },
     menuCategory: function(params, oncomplite) {
       oncomplite(lampacDoramaSections().map(function(section) {
