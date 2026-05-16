@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using System.Collections.Generic;
@@ -79,17 +79,27 @@ public class ForkController : BaseController
                 },
                 new ForkPlaylistItem()
                 {
+                    title = "Дорамы",
+                    playlist_url = $"{host}/fxml/cub?cat=dorama",
+                    logo_30x30 = Icon.Folder
+                },
+                new ForkPlaylistItem()
+                {
                     title = "Каталог",
                     playlist_url = $"{host}/catalog",
                     logo_30x30 = Icon.CdnSearch
-                },
-                new ForkPlaylistItem()
+                }
+            };
+
+            if (CoreInit.conf.sisi.enable)
+            {
+                channels.Add(new ForkPlaylistItem()
                 {
                     title = "Клубничка 18+",
                     playlist_url = $"{host}/sisi",
                     logo_30x30 = Icon.Adult
-                }
-            };
+                });
+            }
 
             return Json(new
             {

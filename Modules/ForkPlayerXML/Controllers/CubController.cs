@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using Shared;
@@ -18,11 +18,35 @@ public class CubController : BaseController
     {
         string uri = $"{host}/fxml/cub";
 
-        string memkey = $"forkxml:list:{search}:{cat}:{sort}:{page}";
+        string additionalArgs = "";
+        foreach (var q in Request.Query)
+        {
+            if (q.Key != "search" && q.Key != "cat" && q.Key != "sort" && q.Key != "page")
+                additionalArgs += $"&{q.Key}={HttpUtility.UrlEncode(q.Value)}";
+        }
+
+        string memkey = $"forkxml:list:{search}:{cat}:{sort}:{page}{additionalArgs}";
 
         if (!memoryCache.TryGetValue(memkey, out List<TmdbMovie> movies) || movies == null)
         {
-            var root = await Http.Get<JObject>("http://tmdb.cub.red/" + $"?query={HttpUtility.UrlEncode(search)}&cat={cat}&sort={sort}&page={page}&results=60");
+            JObject root;
+            if (cat == "dorama")
+            {
+                string tmdbKey = CoreInit.conf.cub?.api_key;
+                if (string.IsNullOrEmpty(tmdbKey)) tmdbKey = "4ef0d7355d9ffb5151e987764708ce96";
+                
+                string sortBy = "popularity.desc";
+                if (sort == "now") sortBy = "first_air_date.desc";
+                else if (sort == "top") sortBy = "vote_average.desc&vote_count.gte=50";
+                
+                string tmdbUrl = $"https://api.themoviedb.org/3/discover/tv?api_key={tmdbKey}&with_original_language=ko&with_genres=18&sort_by={sortBy}&page={page}&language=ru-RU";
+                root = await Http.Get<JObject>(tmdbUrl);
+            }
+            else
+            {
+                root = await Http.Get<JObject>("http://tmdb.cub.red/" + $"?query={HttpUtility.UrlEncode(search)}&cat={cat}&sort={sort}&page={page}&results=60{additionalArgs}");
+            }
+            
             if (root == null || !root.ContainsKey("results"))
                 return BadRequest();
 
@@ -43,7 +67,7 @@ public class CubController : BaseController
             string end_title = string.IsNullOrEmpty(original_title) ? title : $"{title} / {original_title}";
             int serial = string.IsNullOrEmpty(movie.title ?? movie.original_title) ? 1 : 0;
 
-            string args = $"imdb_id={movie.imdb_id}&kinopoisk_id={movie.kinopoisk_id}&title={HttpUtility.UrlEncode(title)}&original_title={HttpUtility.UrlEncode(original_title)}&serial={serial}&original_language={movie.original_language}&year={(movie.release_date ?? movie.first_air_date)?.Split("-")?[0]}";
+            string args = $"id={movie.id}&tmdb_id={movie.id}&imdb_id={movie.imdb_id}&kinopoisk_id={movie.kinopoisk_id}&title={HttpUtility.UrlEncode(title)}&original_title={HttpUtility.UrlEncode(original_title)}&serial={serial}&original_language={movie.original_language}&year={(movie.release_date ?? movie.first_air_date)?.Split("-")?[0]}";
 
             playlists.Add(new ForkPlaylistItem()
             {
