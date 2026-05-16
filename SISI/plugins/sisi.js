@@ -1087,11 +1087,11 @@
       return [
         {
           title: 'Сейчас смотрят',
-          url: doramaDiscoverUrl({ sort_by: 'popularity.desc' })
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', 'air_date.gte': doramaDate(-14), 'air_date.lte': doramaDate(14) })
         },
         {
           title: 'Новые серии',
-          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', 'air_date.gte': doramaDate(-7), 'air_date.lte': doramaDate(14) })
+          url: doramaDiscoverUrl({ sort_by: 'air_date.desc', 'air_date.gte': doramaDate(-14), 'air_date.lte': doramaDate(0) })
         },
         {
           title: 'Онгоинги',
@@ -1099,15 +1099,15 @@
         },
         {
           title: 'Популярное',
-          url: doramaDiscoverUrl({ sort_by: 'vote_count.desc', 'vote_count.gte': 50 })
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc' })
         },
         {
           title: 'Последнее добавление',
-          url: doramaDiscoverUrl({ sort_by: 'first_air_date.desc' })
+          url: doramaDiscoverUrl({ sort_by: 'first_air_date.desc', 'first_air_date.lte': doramaDate(0) })
         },
         {
           title: 'Новинки этого года',
-          url: doramaDiscoverUrl({ sort_by: 'first_air_date.desc', first_air_date_year: year })
+          url: doramaDiscoverUrl({ sort_by: 'first_air_date.desc', first_air_date_year: year, 'first_air_date.lte': doramaDate(0) })
         },
         {
           title: 'С высоким рейтингом',

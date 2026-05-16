@@ -66,11 +66,11 @@ function lampacDoramaSections() {
   return [
     {
       title: 'Сейчас смотрят',
-      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc' })
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', 'air_date.gte': lampacDoramaDate(-14), 'air_date.lte': lampacDoramaDate(14) })
     },
     {
       title: 'Новые серии',
-      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', 'air_date.gte': lampacDoramaDate(-7), 'air_date.lte': lampacDoramaDate(14) })
+      url: lampacDoramaDiscoverUrl({ sort_by: 'air_date.desc', 'air_date.gte': lampacDoramaDate(-14), 'air_date.lte': lampacDoramaDate(0) })
     },
     {
       title: 'Онгоинги',
@@ -78,15 +78,15 @@ function lampacDoramaSections() {
     },
     {
       title: 'Популярное',
-      url: lampacDoramaDiscoverUrl({ sort_by: 'vote_count.desc', 'vote_count.gte': 50 })
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc' })
     },
     {
       title: 'Последнее добавление',
-      url: lampacDoramaDiscoverUrl({ sort_by: 'first_air_date.desc' })
+      url: lampacDoramaDiscoverUrl({ sort_by: 'first_air_date.desc', 'first_air_date.lte': lampacDoramaDate(0) })
     },
     {
       title: 'Новинки этого года',
-      url: lampacDoramaDiscoverUrl({ sort_by: 'first_air_date.desc', first_air_date_year: year })
+      url: lampacDoramaDiscoverUrl({ sort_by: 'first_air_date.desc', first_air_date_year: year, 'first_air_date.lte': lampacDoramaDate(0) })
     },
     {
       title: 'С высоким рейтингом',

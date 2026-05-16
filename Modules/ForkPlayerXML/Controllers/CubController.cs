@@ -138,9 +138,9 @@ public class CubController : BaseController
         switch (sort)
         {
             case "update":
-                query.Add("sort_by=popularity.desc");
-                query.Add($"air_date.gte={now.AddDays(-7):yyyy-MM-dd}");
-                query.Add($"air_date.lte={now.AddDays(14):yyyy-MM-dd}");
+                query.Add("sort_by=air_date.desc");
+                query.Add($"air_date.gte={now.AddDays(-14):yyyy-MM-dd}");
+                query.Add($"air_date.lte={now:yyyy-MM-dd}");
                 break;
             case "ongoing":
                 query.Add("sort_by=popularity.desc");
@@ -150,8 +150,7 @@ public class CubController : BaseController
                 query.Add($"air_date.lte={now.AddDays(21):yyyy-MM-dd}");
                 break;
             case "top":
-                query.Add("sort_by=vote_count.desc");
-                query.Add("vote_count.gte=50");
+                query.Add("sort_by=popularity.desc");
                 break;
             case "rated":
                 query.Add("sort_by=vote_average.desc");
@@ -160,14 +159,18 @@ public class CubController : BaseController
                 break;
             case "latest":
                 query.Add("sort_by=first_air_date.desc");
+                query.Add($"first_air_date.lte={now:yyyy-MM-dd}");
                 break;
             case "now":
                 query.Add("sort_by=first_air_date.desc");
                 query.Add($"first_air_date_year={now.Year}");
+                query.Add($"first_air_date.lte={now:yyyy-MM-dd}");
                 break;
             case "now_playing":
             default:
                 query.Add("sort_by=popularity.desc");
+                query.Add($"air_date.gte={now.AddDays(-14):yyyy-MM-dd}");
+                query.Add($"air_date.lte={now.AddDays(14):yyyy-MM-dd}");
                 break;
         }
 

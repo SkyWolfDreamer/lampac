@@ -15,7 +15,10 @@
 - Regression note: the source must use the exported `Lampa.Api.sources.tmdb.list` API. The Samsung/Lampa bundle exports `Lampa.Api`, but not `Lampa.TMDB`; relying on `Lampa.TMDB` makes real clients fall back to the old flat `category_full` screen where no inner sections are visible.
 - Current Dorama sections: `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, `С высоким рейтингом`.
 - Every section uses TMDB Discover TV with `with_original_language=ko`, `with_genres=18`, and `include_adult=false`, then applies its own sort/window/rating filters.
+- `Сейчас смотрят` uses a current-airing window (`air_date` from the previous 14 days through the next 14 days) sorted by popularity, because TMDB Discover has no filtered `watching now` endpoint.
+- `Новые серии` uses already aired episode dates only (`air_date` from the previous 14 days through today) sorted by `air_date.desc`; it must not show future episodes.
 - `Онгоинги` is intentionally narrower than TMDB `Returning Series`: it requires `with_status=0|2`, `first_air_date.lte=today`, and an episode `air_date` from today through the next 21 days, so recently completed batches do not stay in ongoing forever.
+- `Последнее добавление` and `Новинки этого года` both require `first_air_date.lte=today`, so future/unreleased TMDB entries do not appear as already-added releases.
 - This avoids the CUB backend language-filter limitation: tmdb.cub.red accepts extra language parameters but still returns non-Korean results.
 - Both init paths are idempotent: they reuse an existing **Дорамы** button, remove duplicate buttons, and keep retrying briefly so late menu/plugin rendering cannot leave **Дорамы** at the bottom of the menu.
 - For local Docker runtime overrides, mount specific plugin files such as `plugins/override/lampainit-invc.js` and `plugins/override/sisi.js`; overriding the full `lampainit.js` bypasses Lampac's normal init wrapper and can leave stale menu code cached for up to 10 minutes.
@@ -30,6 +33,7 @@
 - Direct smoke confirmed the TMDB Discover TV Dorama query returns Korean drama rows.
 - Direct smoke should cover at least one section URL for `air_date` and one for `first_air_date_year` after every future sort change.
 - Local Docker smoke confirmed `/lampainit.js` and `/sisi.js` both serve `lampac_dorama`, `Новые серии`, and `Онгоинги` from the targeted overrides after compose recreate, and the served scripts now call `tmdb.list` with no `Lampa.TMDB` dependency.
+- Follow-up filter review smoke confirmed all seven Dorama section queries return rows; `update`, `latest`, and current-year `now` exclude future dates; `ongoing` excludes stale `Returning Series` examples without upcoming episode air dates.
 
 ## Manual Regression Checklist
 

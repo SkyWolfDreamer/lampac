@@ -13,7 +13,7 @@
 
 - Normal CUB categories still call `http://tmdb.cub.red/` with forwarded extra query params.
 - `cat=dorama` bypasses CUB and calls TMDB Discover TV directly with `with_original_language=ko`, `with_genres=18`, `include_adult=false`, and the configured `CoreInit.conf.cub.api_key` fallback.
-- Dorama sort values now map to direct TMDB filters: `now_playing` -> popularity, `update` -> recent/near-future air dates, `ongoing` -> returning/in-production titles with episodes airing from today through the next 21 days, `top` -> vote count, `latest` -> first-air-date descending, `now` -> current-year first-air-date descending, `rated` -> high-rating filter.
+- Dorama sort values now map to direct TMDB filters: `now_playing` -> current-airing popularity window, `update` -> already aired recent episode dates, `ongoing` -> returning/in-production titles with episodes airing from today through the next 21 days, `top` -> popularity, `latest` -> first-air-date descending up to today, `now` -> current-year first-air-date descending up to today, `rated` -> high-rating filter.
 - `next_page_url` now uses `search=...` consistently and keeps additional filters instead of switching to the unsupported `query=...` parameter.
 
 ## Verification
@@ -29,6 +29,7 @@
 - Local Docker runtime smoke after compose recreate confirmed:
   - `/fxml` exposes `Дорамы` as a submenu with all 7 sections.
   - `/fxml/cub?cat=dorama&sort=rated` returns 20 rows, `Сортировка: с высоким рейтингом`, and a non-empty `next_page_url`.
+- Follow-up filter review smoke confirmed `/fxml/cub?cat=dorama&sort=now_playing|update|ongoing|top|latest|now|rated` returns rows locally; `ongoing` excludes `Слабый герой` and `Охотничьи псы`; served `/lampainit.js` and `/sisi.js` contain the current `air_date` and `first_air_date.lte` windows.
 
 ## Manual Regression Checklist
 
@@ -36,6 +37,7 @@
 2. Open `Дорамы` and confirm it shows nested sections: `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, `С высоким рейтингом`.
 3. Confirm `Клубничка 18+` is not visible in the ForkPlayer root menu.
 4. Open `/fxml/cub?cat=dorama&sort=ongoing` and confirm Korean drama rows are returned, but completed/recently released batches without upcoming episode air dates such as `Слабый герой` and `Охотничьи псы` do not appear.
-5. Use the sort submenu on a Dorama list and confirm links still return Dorama rows.
-6. Follow `next_page_url` on Dorama results and confirm page 2 loads.
-7. Open `/fxml/cub?cat=movie&without_genres=16` and `/fxml/cub?cat=movie&genre=16` to confirm forwarded CUB filters still work.
+5. Open `/fxml/cub?cat=dorama&sort=latest` and `/fxml/cub?cat=dorama&sort=now`; confirm first-air dates do not point into the future.
+6. Use the sort submenu on a Dorama list and confirm links still return Dorama rows.
+7. Follow `next_page_url` on Dorama results and confirm page 2 loads.
+8. Open `/fxml/cub?cat=movie&without_genres=16` and `/fxml/cub?cat=movie&genre=16` to confirm forwarded CUB filters still work.
