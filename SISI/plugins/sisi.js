@@ -1116,28 +1116,67 @@
       ];
     }
 
-    function doramaLoad(url, page, oncomplite, onerror) {
+    var DORAMA_SOURCE_VERSION = '2026-05-16-more-safe';
+
+    function prepareDoramaPage(json, url, page, title) {
+      if (!json) json = { results: [] };
+
+      var currentPage = page || (json && json.page) || 1;
+      var totalPages = parseInt((json && json.total_pages) || 0, 10);
+      var hasResults = json && json.results && json.results.length;
+      var hasNext = totalPages ? currentPage < totalPages : hasResults && json.results.length >= 20;
+
+      json.url = url;
+      json.page = currentPage;
+
+      if (title) json.title = title;
+      if (hasNext) json.more = true;
+      else json.nomore = true;
+
+      return json;
+    }
+
+    function doramaLoad(url, page, oncomplite, onerror, title) {
       var tmdb = Lampa.Api && Lampa.Api.sources && Lampa.Api.sources.tmdb;
 
-      if (!tmdb || !tmdb.list) {
+      if (!url || !tmdb || !tmdb.list) {
         if (onerror) onerror();
         return;
       }
 
       tmdb.list({ url: url, page: page || 1, source: 'tmdb' }, function(json) {
-        json.url = url;
-        oncomplite(json);
+        oncomplite(prepareDoramaPage(json, url, page || 1, title));
       }, onerror);
+    }
+
+    function doramaList(params, oncomplite, onerror) {
+      var requestedPage = params.page || 1;
+      var fallback = function() {
+        if (requestedPage > 1) {
+          doramaLoad(params.url, 1, oncomplite, onerror, params.title);
+        } else if (onerror) {
+          onerror();
+        }
+      };
+
+      doramaLoad(params.url, requestedPage, function(json) {
+        if (json.results && json.results.length) {
+          oncomplite(json);
+        } else {
+          fallback();
+        }
+      }, fallback, params.title);
     }
 
     function registerDoramaSource() {
       if (!Lampa.Api || !Lampa.Api.sources) return false;
-      if (Lampa.Api.sources.lampac_dorama) return true;
+      if (Lampa.Api.sources.lampac_dorama && Lampa.Api.sources.lampac_dorama._lampacVersion == DORAMA_SOURCE_VERSION) return true;
       if (!Lampa.Api.sources.tmdb || !Lampa.Api.sources.tmdb.list) return false;
 
       var tmdb = Lampa.Api.sources.tmdb;
 
       Lampa.Api.sources.lampac_dorama = {
+        _lampacVersion: DORAMA_SOURCE_VERSION,
         main: function(params, oncomplite, onerror) {
           Lampa.Api.sources.lampac_dorama.category(params, oncomplite, onerror);
         },
@@ -1162,14 +1201,13 @@
 
           sections.forEach(function(section, index) {
             doramaLoad(section.url, 1, function(json) {
-              json.title = section.title;
               data[index] = json;
               done();
-            }, done);
+            }, done, section.title);
           });
         },
         list: function(params, oncomplite, onerror) {
-          doramaLoad(params.url, params.page, oncomplite, onerror);
+          doramaList(params, oncomplite, onerror);
         },
         menuCategory: function(params, oncomplite) {
           oncomplite(doramaSections().map(function(section) {

@@ -21,6 +21,8 @@
 - `Последнее добавление` and `Новинки этого года` both require `first_air_date.lte=today`, so future/unreleased TMDB entries do not appear as already-added releases.
 - This avoids the CUB backend language-filter limitation: tmdb.cub.red accepts extra language parameters but still returns non-Korean results.
 - Both init paths are idempotent: they reuse an existing **Дорамы** button, remove duplicate buttons, and keep retrying briefly so late menu/plugin rendering cannot leave **Дорамы** at the bottom of the menu.
+- Both init paths now refresh an older in-memory `lampac_dorama` source if the page loaded stale code first, so `/lampainit.js` and `/sisi.js` cannot keep an old source that opens broken **Ещё** pages.
+- Dorama section rows preserve their original Discover URL and page metadata for **Ещё**. Rows mark themselves `nomore` when there is no next TMDB page, and page-list loading falls back to page 1 if a requested next page is empty or rejected by the TMDB/proxy path.
 - For local Docker runtime overrides, mount specific plugin files such as `plugins/override/lampainit-invc.js` and `plugins/override/sisi.js`; overriding the full `lampainit.js` bypasses Lampac's normal init wrapper and can leave stale menu code cached for up to 10 minutes.
 
 ## Verification
@@ -34,6 +36,7 @@
 - Direct smoke should cover at least one section URL for `air_date` and one for `first_air_date_year` after every future sort change.
 - Local Docker smoke confirmed `/lampainit.js` and `/sisi.js` both serve `lampac_dorama`, `Новые серии`, and `Онгоинги` from the targeted overrides after compose recreate, and the served scripts now call `tmdb.list` with no `Lampa.TMDB` dependency.
 - Follow-up filter review smoke confirmed all seven Dorama section queries return rows; `update`, `latest`, and current-year `now` exclude future dates; `ongoing` excludes stale `Returning Series` examples without upcoming episode air dates.
+- **Ещё** regression smoke should validate `Новинки этого года` page 2 and one intentionally empty next-page response: the former must return Korean drama rows, while the latter must fall back to a non-empty first page instead of showing Lampa's empty state.
 
 ## Manual Regression Checklist
 
@@ -41,6 +44,6 @@
 2. Open the left menu and confirm **Дорамы** appears directly after **Сериалы**.
 3. Select **Дорамы** and confirm it opens a sectioned screen titled **Дорамы**.
 4. Confirm the screen includes `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, and `С высоким рейтингом` when TMDB returns rows for those sections.
-5. Open `Ещё` from at least one Dorama section and confirm pagination stays inside Korean dramas.
+5. Open `Ещё` from at least `Новинки этого года` and one more Dorama section; confirm it opens Korean drama rows, not Lampa's empty state.
 6. Toggle SISI **Отображать в меню** off and confirm **Дорамы** remains visible while **Клубничка** is hidden.
 7. Reload Lampa and confirm only one **Дорамы** item appears.
