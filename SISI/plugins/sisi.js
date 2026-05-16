@@ -1095,7 +1095,7 @@
         },
         {
           title: 'Онгоинги',
-          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_status: '0|2' })
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_status: '0|2', 'first_air_date.lte': doramaDate(0), 'air_date.gte': doramaDate(0), 'air_date.lte': doramaDate(21) })
         },
         {
           title: 'Популярное',

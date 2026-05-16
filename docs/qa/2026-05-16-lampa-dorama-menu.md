@@ -15,6 +15,7 @@
 - Regression note: the source must use the exported `Lampa.Api.sources.tmdb.list` API. The Samsung/Lampa bundle exports `Lampa.Api`, but not `Lampa.TMDB`; relying on `Lampa.TMDB` makes real clients fall back to the old flat `category_full` screen where no inner sections are visible.
 - Current Dorama sections: `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, `С высоким рейтингом`.
 - Every section uses TMDB Discover TV with `with_original_language=ko`, `with_genres=18`, and `include_adult=false`, then applies its own sort/window/rating filters.
+- `Онгоинги` is intentionally narrower than TMDB `Returning Series`: it requires `with_status=0|2`, `first_air_date.lte=today`, and an episode `air_date` from today through the next 21 days, so recently completed batches do not stay in ongoing forever.
 - This avoids the CUB backend language-filter limitation: tmdb.cub.red accepts extra language parameters but still returns non-Korean results.
 - Both init paths are idempotent: they reuse an existing **Дорамы** button, remove duplicate buttons, and keep retrying briefly so late menu/plugin rendering cannot leave **Дорамы** at the bottom of the menu.
 - For local Docker runtime overrides, mount specific plugin files such as `plugins/override/lampainit-invc.js` and `plugins/override/sisi.js`; overriding the full `lampainit.js` bypasses Lampac's normal init wrapper and can leave stale menu code cached for up to 10 minutes.

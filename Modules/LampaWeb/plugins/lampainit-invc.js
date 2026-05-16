@@ -74,7 +74,7 @@ function lampacDoramaSections() {
     },
     {
       title: 'Онгоинги',
-      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_status: '0|2' })
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_status: '0|2', 'first_air_date.lte': lampacDoramaDate(0), 'air_date.gte': lampacDoramaDate(0), 'air_date.lte': lampacDoramaDate(21) })
     },
     {
       title: 'Популярное',

@@ -124,6 +124,7 @@ public class CubController : BaseController
 
     string DoramaDiscoverUrl(string tmdbKey, string sort, int page)
     {
+        var now = DateTime.UtcNow;
         var query = new List<string>()
         {
             $"api_key={HttpUtility.UrlEncode(tmdbKey)}",
@@ -138,12 +139,15 @@ public class CubController : BaseController
         {
             case "update":
                 query.Add("sort_by=popularity.desc");
-                query.Add($"air_date.gte={DateTime.UtcNow.AddDays(-7):yyyy-MM-dd}");
-                query.Add($"air_date.lte={DateTime.UtcNow.AddDays(14):yyyy-MM-dd}");
+                query.Add($"air_date.gte={now.AddDays(-7):yyyy-MM-dd}");
+                query.Add($"air_date.lte={now.AddDays(14):yyyy-MM-dd}");
                 break;
             case "ongoing":
                 query.Add("sort_by=popularity.desc");
                 query.Add("with_status=0%7C2");
+                query.Add($"first_air_date.lte={now:yyyy-MM-dd}");
+                query.Add($"air_date.gte={now:yyyy-MM-dd}");
+                query.Add($"air_date.lte={now.AddDays(21):yyyy-MM-dd}");
                 break;
             case "top":
                 query.Add("sort_by=vote_count.desc");
@@ -159,7 +163,7 @@ public class CubController : BaseController
                 break;
             case "now":
                 query.Add("sort_by=first_air_date.desc");
-                query.Add($"first_air_date_year={DateTime.UtcNow.Year}");
+                query.Add($"first_air_date_year={now.Year}");
                 break;
             case "now_playing":
             default:

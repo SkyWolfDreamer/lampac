@@ -13,7 +13,7 @@
 
 - Normal CUB categories still call `http://tmdb.cub.red/` with forwarded extra query params.
 - `cat=dorama` bypasses CUB and calls TMDB Discover TV directly with `with_original_language=ko`, `with_genres=18`, `include_adult=false`, and the configured `CoreInit.conf.cub.api_key` fallback.
-- Dorama sort values now map to direct TMDB filters: `now_playing` -> popularity, `update` -> recent/near-future air dates, `ongoing` -> returning/in-production statuses, `top` -> vote count, `latest` -> first-air-date descending, `now` -> current-year first-air-date descending, `rated` -> high-rating filter.
+- Dorama sort values now map to direct TMDB filters: `now_playing` -> popularity, `update` -> recent/near-future air dates, `ongoing` -> returning/in-production titles with episodes airing from today through the next 21 days, `top` -> vote count, `latest` -> first-air-date descending, `now` -> current-year first-air-date descending, `rated` -> high-rating filter.
 - `next_page_url` now uses `search=...` consistently and keeps additional filters instead of switching to the unsupported `query=...` parameter.
 
 ## Verification
@@ -35,7 +35,7 @@
 1. Open `/fxml` in ForkPlayer and confirm `Дорамы` is visible directly after `Сериалы`.
 2. Open `Дорамы` and confirm it shows nested sections: `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, `С высоким рейтингом`.
 3. Confirm `Клубничка 18+` is not visible in the ForkPlayer root menu.
-4. Open `/fxml/cub?cat=dorama&sort=ongoing` and confirm Korean drama rows are returned.
+4. Open `/fxml/cub?cat=dorama&sort=ongoing` and confirm Korean drama rows are returned, but completed/recently released batches without upcoming episode air dates such as `Слабый герой` and `Охотничьи псы` do not appear.
 5. Use the sort submenu on a Dorama list and confirm links still return Dorama rows.
 6. Follow `next_page_url` on Dorama results and confirm page 2 loads.
 7. Open `/fxml/cub?cat=movie&without_genres=16` and `/fxml/cub?cat=movie&genre=16` to confirm forwarded CUB filters still work.
