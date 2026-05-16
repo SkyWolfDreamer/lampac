@@ -1,11 +1,9 @@
-using Shared.Models.Module;
+﻿using Shared.Models.Module;
 
 namespace Shared.Models.SISI.Base;
 
 public class SisiConf : ModuleBaseConf
 {
-    public bool enable { get; set; } = true;
-
     public bool rsize { get; set; }
 
     public string rsize_host { get; set; }

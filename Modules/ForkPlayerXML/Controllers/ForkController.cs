@@ -108,43 +108,43 @@ public class ForkController : BaseController
             new ForkPlaylistItem()
             {
                 title = "Сейчас смотрят",
-                playlist_url = $"{host}/fxml/cub?cat=dorama&sort=now_playing",
+                playlist_url = $"{host}/fxml/tmdb?cat=dorama&sort=now_playing",
                 logo_30x30 = Icon.Folder
             },
             new ForkPlaylistItem()
             {
                 title = "Новые серии",
-                playlist_url = $"{host}/fxml/cub?cat=dorama&sort=update",
+                playlist_url = $"{host}/fxml/tmdb?cat=dorama&sort=update",
                 logo_30x30 = Icon.Folder
             },
             new ForkPlaylistItem()
             {
                 title = "Онгоинги",
-                playlist_url = $"{host}/fxml/cub?cat=dorama&sort=ongoing",
+                playlist_url = $"{host}/fxml/tmdb?cat=dorama&sort=ongoing",
                 logo_30x30 = Icon.Folder
             },
             new ForkPlaylistItem()
             {
                 title = "Популярное",
-                playlist_url = $"{host}/fxml/cub?cat=dorama&sort=top",
+                playlist_url = $"{host}/fxml/tmdb?cat=dorama&sort=top",
                 logo_30x30 = Icon.Folder
             },
             new ForkPlaylistItem()
             {
                 title = "Последнее добавление",
-                playlist_url = $"{host}/fxml/cub?cat=dorama&sort=latest",
+                playlist_url = $"{host}/fxml/tmdb?cat=dorama&sort=latest",
                 logo_30x30 = Icon.Folder
             },
             new ForkPlaylistItem()
             {
                 title = "Новинки этого года",
-                playlist_url = $"{host}/fxml/cub?cat=dorama&sort=now",
+                playlist_url = $"{host}/fxml/tmdb?cat=dorama&sort=now",
                 logo_30x30 = Icon.Folder
             },
             new ForkPlaylistItem()
             {
                 title = "С высоким рейтингом",
-                playlist_url = $"{host}/fxml/cub?cat=dorama&sort=rated",
+                playlist_url = $"{host}/fxml/tmdb?cat=dorama&sort=rated",
                 logo_30x30 = Icon.Folder
             }
         };
