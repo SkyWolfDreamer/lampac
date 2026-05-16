@@ -95,7 +95,7 @@ function lampacDoramaSections() {
   ];
 }
 
-var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-native-url';
+var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-local-tmdb-proxy';
 var lampacDoramaNetwork;
 
 function lampacDoramaAddParam(url, param) {
@@ -112,6 +112,11 @@ function lampacDoramaTmdbUrl(url, page) {
   url = lampacDoramaAddParam(url, 'api_key=4ef0d7355d9ffb5151e987764708ce96');
   url = lampacDoramaAddParam(url, 'language=' + encodeURIComponent(language));
   url = lampacDoramaAddParam(url, 'page=' + encodeURIComponent(page || 1));
+
+  var localhost = '{localhost}'.replace(/\/$/, '');
+  if (localhost && localhost.indexOf('{') !== 0) {
+    return localhost + '/tmdb/api/3/' + url;
+  }
 
   var protocol = Lampa.Utils && Lampa.Utils.protocol ? Lampa.Utils.protocol() : 'http://';
   var proxy = Lampa.Storage && Lampa.Storage.field && Lampa.Storage.field('proxy_tmdb');
