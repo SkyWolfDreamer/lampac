@@ -95,7 +95,8 @@ function lampacDoramaSections() {
   ];
 }
 
-var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-direct-page';
+var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-native-url';
+var lampacDoramaNetwork;
 
 function lampacDoramaAddParam(url, param) {
   return url + (/\?/.test(url) ? '&' : '?') + param;
@@ -112,7 +113,16 @@ function lampacDoramaTmdbUrl(url, page) {
   url = lampacDoramaAddParam(url, 'language=' + encodeURIComponent(language));
   url = lampacDoramaAddParam(url, 'page=' + encodeURIComponent(page || 1));
 
-  return 'https://api.themoviedb.org/3/' + url;
+  var protocol = Lampa.Utils && Lampa.Utils.protocol ? Lampa.Utils.protocol() : 'http://';
+  var proxy = Lampa.Storage && Lampa.Storage.field && Lampa.Storage.field('proxy_tmdb');
+  var base = proxy ? 'apitmdb.cub.watch/3/' : 'api.themoviedb.org/3/';
+
+  return protocol + base + url;
+}
+
+function lampacDoramaReguest() {
+  if (!lampacDoramaNetwork && Lampa.Reguest) lampacDoramaNetwork = new Lampa.Reguest();
+  return lampacDoramaNetwork;
 }
 
 function prepareLampacDoramaPage(json, url, page, title) {
@@ -136,12 +146,12 @@ function prepareLampacDoramaPage(json, url, page, title) {
 function lampacDoramaLoad(url, page, oncomplite, onerror, title) {
   var tmdb = Lampa.Api && Lampa.Api.sources && Lampa.Api.sources.tmdb;
 
-  if (!url || !tmdb || !Lampa.Reguest) {
+  var network = lampacDoramaReguest();
+
+  if (!url || !tmdb || !network) {
     if (onerror) onerror();
     return;
   }
-
-  var network = new Lampa.Reguest();
 
   network.silent(lampacDoramaTmdbUrl(url, page || 1), function(json) {
     oncomplite(prepareLampacDoramaPage(json, url, page || 1, title));

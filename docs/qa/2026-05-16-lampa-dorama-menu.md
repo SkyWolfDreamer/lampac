@@ -12,7 +12,7 @@
 
 - The button now opens a normal category screen, not a single category_full list.
 - A client source named `lampac_dorama` provides the same style of sectioned home screen as `Сериалы`.
-- Regression note: the source must not use `Lampa.TMDB`; the Samsung/Lampa bundle exports `Lampa.Api`, but not `Lampa.TMDB`. Dorama pages now fetch TMDB Discover directly through `Lampa.Reguest` so section page 2 uses the exact same section URL plus the requested page.
+- Regression note: the source must not use `Lampa.TMDB`; the Samsung/Lampa bundle exports `Lampa.Api`, but not `Lampa.TMDB`. Dorama pages now fetch TMDB Discover directly through `Lampa.Reguest` and build the full URL with the same protocol/proxy/page contract as the native TMDB source.
 - Current Dorama sections: `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, `С высоким рейтингом`.
 - Every section uses TMDB Discover TV with `with_original_language=ko`, `with_genres=18`, and `include_adult=false`, then applies its own sort/window/rating filters.
 - `Сейчас смотрят` uses a current-airing window (`air_date` from the previous 14 days through the next 14 days) sorted by popularity, because TMDB Discover has no filtered `watching now` endpoint.
@@ -36,6 +36,7 @@
 - Direct smoke confirmed the TMDB Discover TV Dorama query returns Korean drama rows.
 - Direct smoke should cover at least one section URL for `air_date` and one for `first_air_date_year` after every future sort change.
 - Local Docker smoke confirmed `/lampainit.js` and `/sisi.js` both serve `lampac_dorama`, `Новые серии`, and `Онгоинги` from the targeted overrides after compose recreate, and the served scripts now call `Lampa.Reguest` with no `Lampa.TMDB` dependency.
+- Follow-up TV compatibility pass aligned the Dorama direct loader with the built-in TMDB URL contract: `Lampa.Utils.protocol()`, `proxy_tmdb`, a persistent `Lampa.Reguest` instance, and explicit requested page.
 - Follow-up filter review smoke confirmed all seven Dorama section queries return rows; `update`, `latest`, and current-year `now` exclude future dates; `ongoing` excludes stale `Returning Series` examples without upcoming episode air dates.
 - **Ещё** regression smoke should validate `Новинки этого года` page 2 and one intentionally empty next-page response: the former must return Korean drama rows, while the latter must not silently reopen page 1.
 
