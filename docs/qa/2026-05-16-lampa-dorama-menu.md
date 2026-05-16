@@ -10,8 +10,10 @@
 
 ## Behaviour Notes
 
-- The button opens category_full with source tmdb.
-- The URL is discover/tv?with_original_language=ko&with_genres=18&sort_by=popularity.desc.
+- The button now opens a normal category screen, not a single category_full list.
+- A client source named `lampac_dorama` provides the same style of sectioned home screen as `Сериалы`.
+- Current Dorama sections: `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, `С высоким рейтингом`.
+- Every section uses TMDB Discover TV with `with_original_language=ko`, `with_genres=18`, and `include_adult=false`, then applies its own sort/window/rating filters.
 - This avoids the CUB backend language-filter limitation: tmdb.cub.red accepts extra language parameters but still returns non-Korean results.
 - Both init paths are idempotent: they reuse an existing **Дорамы** button, remove duplicate buttons, and keep retrying briefly so late menu/plugin rendering cannot leave **Дорамы** at the bottom of the menu.
 - For local Docker runtime overrides, mount specific plugin files such as `plugins/override/lampainit-invc.js` and `plugins/override/sisi.js`; overriding the full `lampainit.js` bypasses Lampac's normal init wrapper and can leave stale menu code cached for up to 10 minutes.
@@ -24,13 +26,15 @@
 - git diff --check passed.
 - Direct smoke confirmed CUB ignores the Korean language filter on cat=tv.
 - Direct smoke confirmed the TMDB Discover TV Dorama query returns Korean drama rows.
-- Local Docker smoke confirmed /lampainit.js and /sisi.js both serve the idempotent Dorama placement code from the targeted overrides.
+- Direct smoke should cover at least one section URL for `air_date` and one for `first_air_date_year` after every future sort change.
+- Local Docker smoke confirmed `/lampainit.js` and `/sisi.js` both serve `lampac_dorama`, `Новые серии`, and `Онгоинги` from the targeted overrides after compose recreate.
 
 ## Manual Regression Checklist
 
 1. Open Lampa with source CUB.
 2. Open the left menu and confirm **Дорамы** appears directly after **Сериалы**.
-3. Select **Дорамы** and confirm the screen title is **Дорамы - CUB**.
-4. Confirm the visible rows are Korean TV dramas.
-5. Toggle SISI **Отображать в меню** off and confirm **Дорамы** remains visible while **Клубничка** is hidden.
-6. Reload Lampa and confirm only one **Дорамы** item appears.
+3. Select **Дорамы** and confirm it opens a sectioned screen titled **Дорамы**.
+4. Confirm the screen includes `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, and `С высоким рейтингом` when TMDB returns rows for those sections.
+5. Open `Ещё` from at least one Dorama section and confirm pagination stays inside Korean dramas.
+6. Toggle SISI **Отображать в меню** off and confirm **Дорамы** remains visible while **Клубничка** is hidden.
+7. Reload Lampa and confirm only one **Дорамы** item appears.

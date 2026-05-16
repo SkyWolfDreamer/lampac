@@ -1055,10 +1055,156 @@
       });
     }
 
+    function doramaDate(daysOffset) {
+      var date = new Date();
+      date.setDate(date.getDate() + (daysOffset || 0));
+
+      var month = date.getMonth() + 1;
+      var day = date.getDate();
+
+      return date.getFullYear() + '-' + (month < 10 ? '0' + month : month) + '-' + (day < 10 ? '0' + day : day);
+    }
+
+    function doramaDiscoverUrl(extra) {
+      var query = [
+        'with_original_language=ko',
+        'with_genres=18',
+        'include_adult=false'
+      ];
+
+      for (var key in extra) {
+        if (extra.hasOwnProperty(key)) {
+          query.push(encodeURIComponent(key) + '=' + encodeURIComponent(extra[key]));
+        }
+      }
+
+      return 'discover/tv?' + query.join('&');
+    }
+
+    function doramaSections() {
+      var year = new Date().getFullYear();
+
+      return [
+        {
+          title: 'Сейчас смотрят',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc' })
+        },
+        {
+          title: 'Новые серии',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', 'air_date.gte': doramaDate(-7), 'air_date.lte': doramaDate(14) })
+        },
+        {
+          title: 'Онгоинги',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_status: '0|2' })
+        },
+        {
+          title: 'Популярное',
+          url: doramaDiscoverUrl({ sort_by: 'vote_count.desc', 'vote_count.gte': 50 })
+        },
+        {
+          title: 'Последнее добавление',
+          url: doramaDiscoverUrl({ sort_by: 'first_air_date.desc' })
+        },
+        {
+          title: 'Новинки этого года',
+          url: doramaDiscoverUrl({ sort_by: 'first_air_date.desc', first_air_date_year: year })
+        },
+        {
+          title: 'С высоким рейтингом',
+          url: doramaDiscoverUrl({ sort_by: 'vote_average.desc', 'vote_average.gte': 7, 'vote_count.gte': 50 })
+        }
+      ];
+    }
+
+    function doramaLoad(url, page, oncomplite, onerror) {
+      if (!Lampa.TMDB || !Lampa.TMDB.get) {
+        if (onerror) onerror();
+        return;
+      }
+
+      Lampa.TMDB.get(url, { page: page || 1 }, function(json) {
+        json.url = url;
+        oncomplite(json);
+      }, onerror);
+    }
+
+    function registerDoramaSource() {
+      if (!Lampa.Api || !Lampa.Api.sources) return false;
+      if (Lampa.Api.sources.lampac_dorama) return true;
+      if (!Lampa.Api.sources.tmdb || !Lampa.TMDB || !Lampa.TMDB.get) return false;
+
+      var tmdb = Lampa.Api.sources.tmdb;
+
+      Lampa.Api.sources.lampac_dorama = {
+        main: function(params, oncomplite, onerror) {
+          Lampa.Api.sources.lampac_dorama.category(params, oncomplite, onerror);
+        },
+        category: function(params, oncomplite, onerror) {
+          var sections = doramaSections();
+          var pending = sections.length;
+          var data = [];
+
+          function done() {
+            pending--;
+
+            if (pending > 0) return;
+
+            var rows = [];
+            for (var i = 0; i < data.length; i++) {
+              if (data[i] && data[i].results && data[i].results.length) rows.push(data[i]);
+            }
+
+            if (rows.length) oncomplite(rows);
+            else if (onerror) onerror();
+          }
+
+          sections.forEach(function(section, index) {
+            doramaLoad(section.url, 1, function(json) {
+              json.title = section.title;
+              data[index] = json;
+              done();
+            }, done);
+          });
+        },
+        list: function(params, oncomplite, onerror) {
+          doramaLoad(params.url, params.page, oncomplite, onerror);
+        },
+        menuCategory: function(params, oncomplite) {
+          oncomplite(doramaSections().map(function(section) {
+            return {
+              title: section.title,
+              url: section.url
+            };
+          }));
+        },
+        full: tmdb.full,
+        person: tmdb.person,
+        seasons: tmdb.seasons,
+        collections: tmdb.collections,
+        menu: tmdb.menu,
+        clear: tmdb.clear
+      };
+
+      return true;
+    }
+
     function openDoramaMenu() {
+      if (registerDoramaSource()) {
+        Lampa.Activity.push({
+          url: 'tv',
+          title: 'Дорамы',
+          component: 'category',
+          source: 'lampac_dorama',
+          card_type: true,
+          page: 1
+        });
+
+        return;
+      }
+
       Lampa.Activity.push({
-        url: 'discover/tv?with_original_language=ko&with_genres=18&sort_by=popularity.desc',
-        title: 'Дорамы - CUB',
+        url: doramaDiscoverUrl({ sort_by: 'popularity.desc' }),
+        title: 'Дорамы',
         component: 'category_full',
         source: 'tmdb',
         card_type: true,

@@ -35,13 +35,8 @@ public class CubController : BaseController
             {
                 string tmdbKey = CoreInit.conf.cub?.api_key;
                 if (string.IsNullOrEmpty(tmdbKey)) tmdbKey = "4ef0d7355d9ffb5151e987764708ce96";
-                
-                string sortBy = "popularity.desc";
-                if (sort == "now") sortBy = "first_air_date.desc";
-                else if (sort == "top") sortBy = "vote_average.desc&vote_count.gte=50";
-                
-                string tmdbUrl = $"https://api.themoviedb.org/3/discover/tv?api_key={tmdbKey}&with_original_language=ko&with_genres=18&sort_by={sortBy}&page={page}&language=ru-RU";
-                root = await Http.Get<JObject>(tmdbUrl);
+
+                root = await Http.Get<JObject>(DoramaDiscoverUrl(tmdbKey, sort, page));
             }
             else
             {
@@ -94,29 +89,9 @@ public class CubController : BaseController
         {
             menu.Add(new ForkPlaylistItem()
             {
-                title = $"Сортировка: {(string.IsNullOrEmpty(sort) ? "выбрать" : sort.Replace("now_playing", "сейчас смотрят").Replace("now", "новинки").Replace("top", "популярное"))}",
+                title = $"Сортировка: {SortTitle(sort)}",
                 playlist_url = "submenu",
-                submenu = new List<ForkPlaylistItem>()
-                {
-                    new ForkPlaylistItem()
-                    {
-                        title = "Новинки",
-                        playlist_url = ListUrl(uri, search, cat, "now", page, additionalArgs),
-                        logo_30x30 = Icon.Folder
-                    },
-                    new ForkPlaylistItem()
-                    {
-                        title = "Популярное",
-                        playlist_url = ListUrl(uri, search, cat, "top", page, additionalArgs),
-                        logo_30x30 = Icon.Folder
-                    },
-                    new ForkPlaylistItem()
-                    {
-                        title = "Cейчас смотрят",
-                        playlist_url = ListUrl(uri, search, cat, "now_playing", page, additionalArgs),
-                        logo_30x30 = Icon.Folder
-                    }
-                },
+                submenu = SortMenu(uri, search, cat, page, additionalArgs),
                 logo_30x30 = Icon.Filter
             });
         }
@@ -147,10 +122,149 @@ public class CubController : BaseController
         return additionalArgs;
     }
 
+    string DoramaDiscoverUrl(string tmdbKey, string sort, int page)
+    {
+        var query = new List<string>()
+        {
+            $"api_key={HttpUtility.UrlEncode(tmdbKey)}",
+            "with_original_language=ko",
+            "with_genres=18",
+            "include_adult=false",
+            $"page={page}",
+            "language=ru-RU"
+        };
+
+        switch (sort)
+        {
+            case "update":
+                query.Add("sort_by=popularity.desc");
+                query.Add($"air_date.gte={DateTime.UtcNow.AddDays(-7):yyyy-MM-dd}");
+                query.Add($"air_date.lte={DateTime.UtcNow.AddDays(14):yyyy-MM-dd}");
+                break;
+            case "ongoing":
+                query.Add("sort_by=popularity.desc");
+                query.Add("with_status=0%7C2");
+                break;
+            case "top":
+                query.Add("sort_by=vote_count.desc");
+                query.Add("vote_count.gte=50");
+                break;
+            case "rated":
+                query.Add("sort_by=vote_average.desc");
+                query.Add("vote_average.gte=7");
+                query.Add("vote_count.gte=50");
+                break;
+            case "latest":
+                query.Add("sort_by=first_air_date.desc");
+                break;
+            case "now":
+                query.Add("sort_by=first_air_date.desc");
+                query.Add($"first_air_date_year={DateTime.UtcNow.Year}");
+                break;
+            case "now_playing":
+            default:
+                query.Add("sort_by=popularity.desc");
+                break;
+        }
+
+        string vote = Request.Query["vote"].ToString();
+        if (!string.IsNullOrWhiteSpace(vote))
+            query.Add($"vote_average.gte={HttpUtility.UrlEncode(vote)}");
+
+        return "https://api.themoviedb.org/3/discover/tv?" + string.Join("&", query);
+    }
+
     static string ListUrl(string uri, string search, string cat, string sort, int page, string additionalArgs)
     {
         string url = $"{uri}?search={HttpUtility.UrlEncode(search)}&cat={HttpUtility.UrlEncode(cat)}&sort={HttpUtility.UrlEncode(sort)}&page={page}";
         return url + additionalArgs;
+    }
+
+    static string SortTitle(string sort)
+        => sort switch
+        {
+            "now_playing" => "сейчас смотрят",
+            "update" => "новые серии",
+            "ongoing" => "онгоинги",
+            "top" => "популярное",
+            "rated" => "с высоким рейтингом",
+            "latest" => "последнее добавление",
+            "now" => "новинки этого года",
+            _ => "выбрать"
+        };
+
+    static List<ForkPlaylistItem> SortMenu(string uri, string search, string cat, int page, string additionalArgs)
+    {
+        if (cat == "dorama")
+        {
+            return new List<ForkPlaylistItem>()
+            {
+                new ForkPlaylistItem()
+                {
+                    title = "Сейчас смотрят",
+                    playlist_url = ListUrl(uri, search, cat, "now_playing", page, additionalArgs),
+                    logo_30x30 = Icon.Folder
+                },
+                new ForkPlaylistItem()
+                {
+                    title = "Новые серии",
+                    playlist_url = ListUrl(uri, search, cat, "update", page, additionalArgs),
+                    logo_30x30 = Icon.Folder
+                },
+                new ForkPlaylistItem()
+                {
+                    title = "Онгоинги",
+                    playlist_url = ListUrl(uri, search, cat, "ongoing", page, additionalArgs),
+                    logo_30x30 = Icon.Folder
+                },
+                new ForkPlaylistItem()
+                {
+                    title = "Популярное",
+                    playlist_url = ListUrl(uri, search, cat, "top", page, additionalArgs),
+                    logo_30x30 = Icon.Folder
+                },
+                new ForkPlaylistItem()
+                {
+                    title = "Последнее добавление",
+                    playlist_url = ListUrl(uri, search, cat, "latest", page, additionalArgs),
+                    logo_30x30 = Icon.Folder
+                },
+                new ForkPlaylistItem()
+                {
+                    title = "Новинки этого года",
+                    playlist_url = ListUrl(uri, search, cat, "now", page, additionalArgs),
+                    logo_30x30 = Icon.Folder
+                },
+                new ForkPlaylistItem()
+                {
+                    title = "С высоким рейтингом",
+                    playlist_url = ListUrl(uri, search, cat, "rated", page, additionalArgs),
+                    logo_30x30 = Icon.Folder
+                }
+            };
+        }
+
+        return new List<ForkPlaylistItem>()
+        {
+            new ForkPlaylistItem()
+            {
+                title = "Новинки",
+                playlist_url = ListUrl(uri, search, cat, "now", page, additionalArgs),
+                logo_30x30 = Icon.Folder
+            },
+            new ForkPlaylistItem()
+            {
+                title = "Популярное",
+                playlist_url = ListUrl(uri, search, cat, "top", page, additionalArgs),
+                logo_30x30 = Icon.Folder
+            },
+            new ForkPlaylistItem()
+            {
+                title = "Сейчас смотрят",
+                playlist_url = ListUrl(uri, search, cat, "now_playing", page, additionalArgs),
+                logo_30x30 = Icon.Folder
+            }
+        };
     }
 
     static bool HasNextPage(string cat, int page, int count, int totalPages)
