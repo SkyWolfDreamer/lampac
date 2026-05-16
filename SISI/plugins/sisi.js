@@ -1116,7 +1116,25 @@
       ];
     }
 
-    var DORAMA_SOURCE_VERSION = '2026-05-16-cub-more';
+    var DORAMA_SOURCE_VERSION = '2026-05-16-direct-page';
+
+    function doramaAddParam(url, param) {
+      return url + (/\?/.test(url) ? '&' : '?') + param;
+    }
+
+    function doramaTmdbUrl(url, page) {
+      var language = 'ru-RU';
+
+      if (Lampa.Storage && Lampa.Storage.field) {
+        language = Lampa.Storage.field('tmdb_lang') || language;
+      }
+
+      url = doramaAddParam(url, 'api_key=4ef0d7355d9ffb5151e987764708ce96');
+      url = doramaAddParam(url, 'language=' + encodeURIComponent(language));
+      url = doramaAddParam(url, 'page=' + encodeURIComponent(page || 1));
+
+      return 'https://api.themoviedb.org/3/' + url;
+    }
 
     function prepareDoramaPage(json, url, page, title) {
       if (!json) json = { results: [] };
@@ -1139,12 +1157,14 @@
     function doramaLoad(url, page, oncomplite, onerror, title) {
       var tmdb = Lampa.Api && Lampa.Api.sources && Lampa.Api.sources.tmdb;
 
-      if (!url || !tmdb || !tmdb.list) {
+      if (!url || !tmdb || !Lampa.Reguest) {
         if (onerror) onerror();
         return;
       }
 
-      tmdb.list({ url: url, page: page || 1, source: 'tmdb' }, function(json) {
+      var network = new Lampa.Reguest();
+
+      network.silent(doramaTmdbUrl(url, page || 1), function(json) {
         oncomplite(prepareDoramaPage(json, url, page || 1, title));
       }, onerror);
     }
