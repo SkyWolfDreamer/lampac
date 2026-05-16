@@ -1116,7 +1116,7 @@
       ];
     }
 
-    var DORAMA_SOURCE_VERSION = '2026-05-16-local-tmdb-proxy';
+    var DORAMA_SOURCE_VERSION = '2026-05-16-source-route';
     var doramaNetwork;
 
     function doramaAddParam(url, param) {
@@ -1149,6 +1149,13 @@
     function doramaReguest() {
       if (!doramaNetwork && Lampa.Reguest) doramaNetwork = new Lampa.Reguest();
       return doramaNetwork;
+    }
+
+    function doramaIsDiscoverUrl(url) {
+      return url &&
+        url.indexOf('discover/tv?') === 0 &&
+        url.indexOf('with_original_language=ko') >= 0 &&
+        url.indexOf('with_genres=18') >= 0;
     }
 
     function prepareDoramaPage(json, url, page, title) {
@@ -1184,8 +1191,48 @@
       }, onerror);
     }
 
+    function patchDoramaActivityRouting() {
+      if (!Lampa.Activity || Lampa.Activity._lampacDoramaPatched) return;
+
+      var originalPush = Lampa.Activity.push;
+      Lampa.Activity.push = function(object) {
+        if (object && object.component == 'category_full' && doramaIsDiscoverUrl(object.url)) {
+          object.source = 'lampac_dorama';
+        }
+
+        return originalPush.apply(this, arguments);
+      };
+
+      Lampa.Activity._lampacDoramaPatched = true;
+    }
+
+    function patchDoramaListFallbackSources() {
+      if (!Lampa.Api || !Lampa.Api.sources) return;
+
+      ['cub', 'tmdb'].forEach(function(sourceName) {
+        var source = Lampa.Api.sources[sourceName];
+
+        if (!source || !source.list || source._lampacDoramaListPatched) return;
+
+        var originalList = source.list;
+
+        source.list = function(params, oncomplite, onerror) {
+          if (params && doramaIsDiscoverUrl(params.url)) {
+            doramaLoad(params.url, params.page, oncomplite, onerror, params.title);
+            return;
+          }
+
+          return originalList.apply(this, arguments);
+        };
+
+        source._lampacDoramaListPatched = true;
+      });
+    }
+
     function registerDoramaSource() {
       if (!Lampa.Api || !Lampa.Api.sources) return false;
+      patchDoramaActivityRouting();
+      patchDoramaListFallbackSources();
       if (Lampa.Api.sources.lampac_dorama && Lampa.Api.sources.lampac_dorama._lampacVersion == DORAMA_SOURCE_VERSION) return true;
       if (!Lampa.Api.sources.tmdb || !Lampa.Api.sources.tmdb.list) return false;
 
@@ -1445,6 +1492,7 @@
 			addFilter();
 			addSettings();
 			watchMenuSetting();
+			registerDoramaSource();
 			addDoramaMenuButton();
 		}
 

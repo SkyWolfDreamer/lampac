@@ -18,6 +18,7 @@ lampainit_invc.appload = function appload() {
 // Лампа полностью загружена, можно работать с интерфейсом 
 lampainit_invc.appready = function appready() {
   // $('.head .notice--icon').remove();
+  registerLampacDoramaSource();
   addLampacDoramaMenuButton();
 };
 
@@ -95,7 +96,7 @@ function lampacDoramaSections() {
   ];
 }
 
-var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-local-tmdb-proxy';
+var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-source-route';
 var lampacDoramaNetwork;
 
 function lampacDoramaAddParam(url, param) {
@@ -128,6 +129,13 @@ function lampacDoramaTmdbUrl(url, page) {
 function lampacDoramaReguest() {
   if (!lampacDoramaNetwork && Lampa.Reguest) lampacDoramaNetwork = new Lampa.Reguest();
   return lampacDoramaNetwork;
+}
+
+function lampacDoramaIsDiscoverUrl(url) {
+  return url &&
+    url.indexOf('discover/tv?') === 0 &&
+    url.indexOf('with_original_language=ko') >= 0 &&
+    url.indexOf('with_genres=18') >= 0;
 }
 
 function prepareLampacDoramaPage(json, url, page, title) {
@@ -163,8 +171,48 @@ function lampacDoramaLoad(url, page, oncomplite, onerror, title) {
   }, onerror);
 }
 
+function patchLampacDoramaActivityRouting() {
+  if (!Lampa.Activity || Lampa.Activity._lampacDoramaPatched) return;
+
+  var originalPush = Lampa.Activity.push;
+  Lampa.Activity.push = function(object) {
+    if (object && object.component == 'category_full' && lampacDoramaIsDiscoverUrl(object.url)) {
+      object.source = 'lampac_dorama';
+    }
+
+    return originalPush.apply(this, arguments);
+  };
+
+  Lampa.Activity._lampacDoramaPatched = true;
+}
+
+function patchLampacDoramaListFallbackSources() {
+  if (!Lampa.Api || !Lampa.Api.sources) return;
+
+  ['cub', 'tmdb'].forEach(function(sourceName) {
+    var source = Lampa.Api.sources[sourceName];
+
+    if (!source || !source.list || source._lampacDoramaListPatched) return;
+
+    var originalList = source.list;
+
+    source.list = function(params, oncomplite, onerror) {
+      if (params && lampacDoramaIsDiscoverUrl(params.url)) {
+        lampacDoramaLoad(params.url, params.page, oncomplite, onerror, params.title);
+        return;
+      }
+
+      return originalList.apply(this, arguments);
+    };
+
+    source._lampacDoramaListPatched = true;
+  });
+}
+
 function registerLampacDoramaSource() {
   if (!Lampa.Api || !Lampa.Api.sources) return false;
+  patchLampacDoramaActivityRouting();
+  patchLampacDoramaListFallbackSources();
   if (Lampa.Api.sources.lampac_dorama && Lampa.Api.sources.lampac_dorama._lampacVersion == LAMPAC_DORAMA_SOURCE_VERSION) return true;
   if (!Lampa.Api.sources.tmdb || !Lampa.Api.sources.tmdb.list) return false;
 

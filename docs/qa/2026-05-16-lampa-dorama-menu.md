@@ -24,6 +24,7 @@
 - Both init paths now refresh an older in-memory `lampac_dorama` source if the page loaded stale code first, so `/lampainit.js` and `/sisi.js` cannot keep an old source that opens broken **Ещё** pages.
 - Dorama section rows preserve their original Discover URL and page metadata for **Ещё**. Rows mark themselves `nomore` when there is no next TMDB page.
 - **Ещё** intentionally follows the native **Сериалы/CUB** pattern: category rows keep a section URL, and the list loader opens that same URL with the requested `page` without falling back to page 1. This prevents a section **Ещё** action from reopening the first/full list.
+- Regression note: native `InteractionLine.more()` can still push `source=cub` when Lampa's active catalogue source is CUB. Dorama init code must patch activity routing and CUB/TMDB `list` handlers so any Korean-drama `discover/tv` URL is handled by `lampac_dorama` instead of being sent to CUB.
 - For local Docker runtime overrides, mount specific plugin files such as `plugins/override/lampainit-invc.js` and `plugins/override/sisi.js`; overriding the full `lampainit.js` bypasses Lampac's normal init wrapper and can leave stale menu code cached for up to 10 minutes.
 
 ## Verification
@@ -38,6 +39,7 @@
 - Local Docker smoke confirmed `/lampainit.js` and `/sisi.js` both serve `lampac_dorama`, `Новые серии`, and `Онгоинги` from the targeted overrides after compose recreate, and the served scripts now call `Lampa.Reguest` with no `Lampa.TMDB` dependency.
 - Follow-up TV compatibility pass aligned the Dorama direct loader with the built-in TMDB URL contract: `Lampa.Utils.protocol()`, `proxy_tmdb`, a persistent `Lampa.Reguest` instance, and explicit requested page.
 - Follow-up empty-`Ещё` fix moved the primary request URL to Lampac's same-origin `/tmdb/api/3/...` TMDB proxy. Direct smoke confirmed `/tmdb/api/3/discover/tv?...page=2` returns 20 Korean drama rows for `Популярное`, so section `Ещё` no longer depends on client-side TMDB/CORS behaviour.
+- Follow-up source-routing fix covers user-observed links like `component=category_full&source=cub&url=discover/tv?...with_original_language=ko...`; these should now be forced through `lampac_dorama` or intercepted by the patched CUB/TMDB list wrappers.
 - Follow-up filter review smoke confirmed all seven Dorama section queries return rows; `update`, `latest`, and current-year `now` exclude future dates; `ongoing` excludes stale `Returning Series` examples without upcoming episode air dates.
 - **Ещё** regression smoke should validate `Новинки этого года` page 2 and one intentionally empty next-page response: the former must return Korean drama rows, while the latter must not silently reopen page 1.
 
