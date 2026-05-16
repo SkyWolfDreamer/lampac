@@ -1055,6 +1055,48 @@
       });
     }
 
+    function openDoramaMenu() {
+      Lampa.Activity.push({
+        url: 'discover/tv?with_original_language=ko&with_genres=18&sort_by=popularity.desc',
+        title: 'Дорамы - CUB',
+        component: 'category_full',
+        source: 'tmdb',
+        card_type: true,
+        page: 1
+      });
+    }
+
+    function addDoramaMenuButton(attempt) {
+      if (window.lampac_dorama_menu_ready) return;
+
+      var menu = $('.menu .menu__list').eq(0);
+      var tv = menu.find('[data-action="tv"]').first();
+
+      if (!menu.length || !tv.length) {
+        if ((attempt || 0) < 20) {
+          setTimeout(function() {
+            addDoramaMenuButton((attempt || 0) + 1);
+          }, 500);
+        }
+
+        return;
+      }
+
+      if (menu.find('[data-action="dorama"]').length) {
+        window.lampac_dorama_menu_ready = true;
+        return;
+      }
+
+      var button = $("<li class=\"menu__item selector\" data-action=\"dorama\">\n            <div class=\"menu__ico\"><img src=\"./img/icons/menu/tv.svg\" /></div>\n            <div class=\"menu__text\">Дорамы</div>\n        </li>");
+
+      button.on('hover:enter', function() {
+        openDoramaMenu();
+      });
+
+      tv.after(button);
+      window.lampac_dorama_menu_ready = true;
+    }
+
     function add() {
       if (Lampa.Storage.field('sisi_show_in_menu') === false) return;
       if (getMenuButton().length) return;
@@ -1168,10 +1210,11 @@
 			add()
 		}
 		
-		addFilter();
-		addSettings();
-		watchMenuSetting();
-	}
+			addFilter();
+			addSettings();
+			watchMenuSetting();
+			addDoramaMenuButton();
+		}
 
     if (window.appready) init();
     else {
