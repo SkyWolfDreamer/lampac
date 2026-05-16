@@ -13,8 +13,8 @@
 - The button now opens a normal category screen, not a single category_full list.
 - A client source named `lampac_dorama` provides the same style of sectioned home screen as `Сериалы`.
 - Regression note: the source must not use `Lampa.TMDB`; the Samsung/Lampa bundle exports `Lampa.Api`, but not `Lampa.TMDB`. Dorama pages now fetch TMDB Discover through `Lampa.Reguest` against Lampac's same-origin `/tmdb/api/3/...` proxy, with a native TMDB URL-builder fallback only when `{localhost}` was not replaced.
-- Current Dorama sections: `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, `С высоким рейтингом`.
-- Every section uses TMDB Discover TV with `with_original_language=ko`, `with_genres=18`, and `include_adult=false`, then applies its own sort/window/rating filters.
+- Current Dorama sections: `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, `С высоким рейтингом`, `Комедийные дорамы`, `Криминальные`, `Детективы`, `Боевики`, `Фэнтези`, `Семейные`, `Мини-сериалы`, `Netflix`, `tvN`, `JTBC`.
+- Every section uses TMDB Discover TV with `with_original_language=ko`, `include_adult=false`, and drama genre `18` by default, then applies its own sort/window/rating filters. Genre-combination rows override `with_genres` with `18,<genre>`.
 - `Сейчас смотрят` uses a current-airing window (`air_date` from the previous 14 days through the next 14 days) sorted by popularity, because TMDB Discover has no filtered `watching now` endpoint.
 - `Новые серии` uses already aired episode dates only (`air_date` from the previous 14 days through today) sorted by `air_date.desc`; it must not show future episodes.
 - `Онгоинги` is intentionally narrower than TMDB `Returning Series`: it requires `with_status=0|2`, `first_air_date.lte=today`, and an episode `air_date` from today through the next 21 days, so recently completed batches do not stay in ongoing forever.
@@ -40,6 +40,7 @@
 - Follow-up TV compatibility pass aligned the Dorama direct loader with the built-in TMDB URL contract: `Lampa.Utils.protocol()`, `proxy_tmdb`, a persistent `Lampa.Reguest` instance, and explicit requested page.
 - Follow-up empty-`Ещё` fix moved the primary request URL to Lampac's same-origin `/tmdb/api/3/...` TMDB proxy. Direct smoke confirmed `/tmdb/api/3/discover/tv?...page=2` returns 20 Korean drama rows for `Популярное`, so section `Ещё` no longer depends on client-side TMDB/CORS behaviour.
 - Follow-up source-routing fix covers user-observed links like `component=category_full&source=cub&url=discover/tv?...with_original_language=ko...`; these should now be forced through `lampac_dorama` or intercepted by the patched CUB/TMDB list wrappers.
+- Follow-up catalog expansion smoke checked the added genre/network rows against the container TMDB proxy; all added rows returned results on page 1.
 - Follow-up filter review smoke confirmed all seven Dorama section queries return rows; `update`, `latest`, and current-year `now` exclude future dates; `ongoing` excludes stale `Returning Series` examples without upcoming episode air dates.
 - **Ещё** regression smoke should validate `Новинки этого года` page 2 and one intentionally empty next-page response: the former must return Korean drama rows, while the latter must not silently reopen page 1.
 
@@ -48,7 +49,7 @@
 1. Open Lampa with source CUB.
 2. Open the left menu and confirm **Дорамы** appears directly after **Сериалы**.
 3. Select **Дорамы** and confirm it opens a sectioned screen titled **Дорамы**.
-4. Confirm the screen includes `Сейчас смотрят`, `Новые серии`, `Онгоинги`, `Популярное`, `Последнее добавление`, `Новинки этого года`, and `С высоким рейтингом` when TMDB returns rows for those sections.
+4. Confirm the screen includes the core rows plus added genre/network rows such as `Комедийные дорамы`, `Криминальные`, `Детективы`, `Боевики`, `Фэнтези`, `Семейные`, `Мини-сериалы`, `Netflix`, `tvN`, and `JTBC` when TMDB returns rows for those sections.
 5. Open `Ещё` from at least `Новинки этого года` and one more Dorama section; confirm it opens Korean drama rows, not Lampa's empty state.
 6. Toggle SISI **Отображать в меню** off and confirm **Дорамы** remains visible while **Клубничка** is hidden.
 7. Reload Lampa and confirm only one **Дорамы** item appears.

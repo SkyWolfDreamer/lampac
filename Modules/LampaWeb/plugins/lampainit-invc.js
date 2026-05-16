@@ -46,11 +46,16 @@ function lampacDoramaDate(daysOffset) {
 }
 
 function lampacDoramaDiscoverUrl(extra) {
+  extra = extra || {};
+
   var query = [
     'with_original_language=ko',
-    'with_genres=18',
     'include_adult=false'
   ];
+
+  if (!extra.hasOwnProperty('with_genres')) {
+    query.push('with_genres=18');
+  }
 
   for (var key in extra) {
     if (extra.hasOwnProperty(key)) {
@@ -92,11 +97,51 @@ function lampacDoramaSections() {
     {
       title: 'С высоким рейтингом',
       url: lampacDoramaDiscoverUrl({ sort_by: 'vote_average.desc', 'vote_average.gte': 7, 'vote_count.gte': 50 })
+    },
+    {
+      title: 'Комедийные дорамы',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,35' })
+    },
+    {
+      title: 'Криминальные',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,80' })
+    },
+    {
+      title: 'Детективы',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,9648' })
+    },
+    {
+      title: 'Боевики',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,10759' })
+    },
+    {
+      title: 'Фэнтези',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,10765' })
+    },
+    {
+      title: 'Семейные',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,10751' })
+    },
+    {
+      title: 'Мини-сериалы',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_type: 2 })
+    },
+    {
+      title: 'Netflix',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_networks: 213 })
+    },
+    {
+      title: 'tvN',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_networks: 866 })
+    },
+    {
+      title: 'JTBC',
+      url: lampacDoramaDiscoverUrl({ sort_by: 'popularity.desc', with_networks: 885 })
     }
   ];
 }
 
-var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-source-route';
+var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-expanded-sections';
 var lampacDoramaNetwork;
 
 function lampacDoramaAddParam(url, param) {

@@ -1066,11 +1066,16 @@
     }
 
     function doramaDiscoverUrl(extra) {
+      extra = extra || {};
+
       var query = [
         'with_original_language=ko',
-        'with_genres=18',
         'include_adult=false'
       ];
+
+      if (!extra.hasOwnProperty('with_genres')) {
+        query.push('with_genres=18');
+      }
 
       for (var key in extra) {
         if (extra.hasOwnProperty(key)) {
@@ -1112,11 +1117,51 @@
         {
           title: 'С высоким рейтингом',
           url: doramaDiscoverUrl({ sort_by: 'vote_average.desc', 'vote_average.gte': 7, 'vote_count.gte': 50 })
+        },
+        {
+          title: 'Комедийные дорамы',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,35' })
+        },
+        {
+          title: 'Криминальные',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,80' })
+        },
+        {
+          title: 'Детективы',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,9648' })
+        },
+        {
+          title: 'Боевики',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,10759' })
+        },
+        {
+          title: 'Фэнтези',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,10765' })
+        },
+        {
+          title: 'Семейные',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_genres: '18,10751' })
+        },
+        {
+          title: 'Мини-сериалы',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_type: 2 })
+        },
+        {
+          title: 'Netflix',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_networks: 213 })
+        },
+        {
+          title: 'tvN',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_networks: 866 })
+        },
+        {
+          title: 'JTBC',
+          url: doramaDiscoverUrl({ sort_by: 'popularity.desc', with_networks: 885 })
         }
       ];
     }
 
-    var DORAMA_SOURCE_VERSION = '2026-05-16-source-route';
+    var DORAMA_SOURCE_VERSION = '2026-05-16-expanded-sections';
     var doramaNetwork;
 
     function doramaAddParam(url, param) {
