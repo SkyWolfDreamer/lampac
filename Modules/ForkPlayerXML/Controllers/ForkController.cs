@@ -91,16 +91,6 @@ public class ForkController : BaseController
                 }
             };
 
-            if (CoreInit.conf.sisi.enable)
-            {
-                channels.Add(new ForkPlaylistItem()
-                {
-                    title = "Клубничка 18+",
-                    playlist_url = $"{host}/sisi",
-                    logo_30x30 = Icon.Adult
-                });
-            }
-
             return Json(new
             {
                 title = "Lampac",

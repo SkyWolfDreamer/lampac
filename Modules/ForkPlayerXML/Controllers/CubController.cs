@@ -12,22 +12,23 @@ namespace ForkXML;
 
 public class CubController : BaseController
 {
+    class CubListCache
+    {
+        public List<TmdbMovie> movies { get; set; }
+
+        public int total_pages { get; set; }
+    }
+
     [HttpGet]
     [Route("fxml/cub")]
     async public Task<ActionResult> Index(string search, string cat, string sort, int page = 1)
     {
         string uri = $"{host}/fxml/cub";
-
-        string additionalArgs = "";
-        foreach (var q in Request.Query)
-        {
-            if (q.Key != "search" && q.Key != "cat" && q.Key != "sort" && q.Key != "page")
-                additionalArgs += $"&{q.Key}={HttpUtility.UrlEncode(q.Value)}";
-        }
+        string additionalArgs = AdditionalArgs();
 
         string memkey = $"forkxml:list:{search}:{cat}:{sort}:{page}{additionalArgs}";
 
-        if (!memoryCache.TryGetValue(memkey, out List<TmdbMovie> movies) || movies == null)
+        if (!memoryCache.TryGetValue(memkey, out CubListCache cache) || cache == null)
         {
             JObject root;
             if (cat == "dorama")
@@ -50,17 +51,22 @@ public class CubController : BaseController
             if (root == null || !root.ContainsKey("results"))
                 return BadRequest();
 
-            movies = root.Value<JArray>("results")?.ToObject<List<TmdbMovie>>();
-            if (movies == null || movies.Count == 0)
+            cache = new CubListCache()
+            {
+                movies = root.Value<JArray>("results")?.ToObject<List<TmdbMovie>>(),
+                total_pages = root.Value<int?>("total_pages") ?? 0
+            };
+
+            if (cache.movies == null || cache.movies.Count == 0)
                 return BadRequest();
 
-            memoryCache.Set(memkey, movies, DateTime.Now.AddMinutes(5));
+            memoryCache.Set(memkey, cache, DateTime.Now.AddMinutes(5));
         }
 
         var menu = new List<ForkPlaylistItem>();
         var playlists = new List<ForkPlaylistItem>();
 
-        foreach (var movie in movies)
+        foreach (var movie in cache.movies)
         {
             string title = movie.title ?? movie.name;
             string original_title = movie.original_title ?? movie.original_name;
@@ -95,19 +101,19 @@ public class CubController : BaseController
                     new ForkPlaylistItem()
                     {
                         title = "Новинки",
-                        playlist_url = $"{uri}?cat={cat}&page={page}&sort=now",
+                        playlist_url = ListUrl(uri, search, cat, "now", page, additionalArgs),
                         logo_30x30 = Icon.Folder
                     },
                     new ForkPlaylistItem()
                     {
                         title = "Популярное",
-                        playlist_url = $"{uri}?cat={cat}&page={page}&sort=top",
+                        playlist_url = ListUrl(uri, search, cat, "top", page, additionalArgs),
                         logo_30x30 = Icon.Folder
                     },
                     new ForkPlaylistItem()
                     {
                         title = "Cейчас смотрят",
-                        playlist_url = $"{uri}?cat={cat}&page={page}&sort=now_playing",
+                        playlist_url = ListUrl(uri, search, cat, "now_playing", page, additionalArgs),
                         logo_30x30 = Icon.Folder
                     }
                 },
@@ -121,11 +127,41 @@ public class CubController : BaseController
             align = "left",
             menu = menu,
             channels = playlists,
-            next_page_url = playlists.Count == 60 ? $"{uri}?query={HttpUtility.UrlEncode(search)}&cat={cat}&sort={sort}&page={page + 1}" : null
+            next_page_url = HasNextPage(cat, page, playlists.Count, cache.total_pages) ? ListUrl(uri, search, cat, sort, page + 1, additionalArgs) : null
         });
+    }
+
+    string AdditionalArgs()
+    {
+        string additionalArgs = "";
+
+        foreach (var q in Request.Query)
+        {
+            if (q.Key == "search" || q.Key == "cat" || q.Key == "sort" || q.Key == "page")
+                continue;
+
+            foreach (var value in q.Value)
+                additionalArgs += $"&{HttpUtility.UrlEncode(q.Key)}={HttpUtility.UrlEncode(value)}";
+        }
+
+        return additionalArgs;
+    }
+
+    static string ListUrl(string uri, string search, string cat, string sort, int page, string additionalArgs)
+    {
+        string url = $"{uri}?search={HttpUtility.UrlEncode(search)}&cat={HttpUtility.UrlEncode(cat)}&sort={HttpUtility.UrlEncode(sort)}&page={page}";
+        return url + additionalArgs;
+    }
+
+    static bool HasNextPage(string cat, int page, int count, int totalPages)
+    {
+        if (cat == "dorama")
+            return totalPages > 0 ? page < totalPages : count == 20;
+
+        return count == 60;
     }
 
 
     static string Description(TmdbMovie movie, string end_title)
-        => $@"<div class=""description"" style=""display: block; top: 38px; max-height: 1042px;""><div id=""title"" style=""color: #699bbb;""><strong>{end_title}</strong></div><br><div id=""cover_div"" style=""float: left; margin: 0px 1.8% 0px 0px;""><img id=""cover_img"" style=""width: 184px; "" src=""http://image.tmdb.org/t/p/w200/{movie.poster_path}""></div><div><strong><span style=""color: #3974d0;"">Выход:</span></strong> {(movie.release_date ?? movie.first_air_date).Split("-")[0]}<br><strong><span style=""color: #339966;"">Качество:</span></strong> {movie.release_quality}<br><div id=""footer"" style=""clear: both;  ""><br>{movie.overview}</div></div></div>";
+        => $@"<div class=""description"" style=""display: block; top: 38px; max-height: 1042px;""><div id=""title"" style=""color: #699bbb;""><strong>{end_title}</strong></div><br><div id=""cover_div"" style=""float: left; margin: 0px 1.8% 0px 0px;""><img id=""cover_img"" style=""width: 184px; "" src=""http://image.tmdb.org/t/p/w200/{movie.poster_path}""></div><div><strong><span style=""color: #3974d0;"">Выход:</span></strong> {(movie.release_date ?? movie.first_air_date)?.Split("-")[0]}<br><strong><span style=""color: #339966;"">Качество:</span></strong> {movie.release_quality}<br><div id=""footer"" style=""clear: both;  ""><br>{movie.overview}</div></div></div>";
 }
