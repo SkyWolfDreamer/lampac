@@ -1117,12 +1117,14 @@
     }
 
     function doramaLoad(url, page, oncomplite, onerror) {
-      if (!Lampa.TMDB || !Lampa.TMDB.get) {
+      var tmdb = Lampa.Api && Lampa.Api.sources && Lampa.Api.sources.tmdb;
+
+      if (!tmdb || !tmdb.list) {
         if (onerror) onerror();
         return;
       }
 
-      Lampa.TMDB.get(url, { page: page || 1 }, function(json) {
+      tmdb.list({ url: url, page: page || 1, source: 'tmdb' }, function(json) {
         json.url = url;
         oncomplite(json);
       }, onerror);
@@ -1131,7 +1133,7 @@
     function registerDoramaSource() {
       if (!Lampa.Api || !Lampa.Api.sources) return false;
       if (Lampa.Api.sources.lampac_dorama) return true;
-      if (!Lampa.Api.sources.tmdb || !Lampa.TMDB || !Lampa.TMDB.get) return false;
+      if (!Lampa.Api.sources.tmdb || !Lampa.Api.sources.tmdb.list) return false;
 
       var tmdb = Lampa.Api.sources.tmdb;
 
