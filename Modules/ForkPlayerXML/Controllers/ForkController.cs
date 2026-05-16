@@ -61,6 +61,12 @@ public class ForkController : BaseController
                 },
                 new ForkPlaylistItem()
                 {
+                    title = "Дорамы",
+                    playlist_url = $"{host}/fxml/cub?cat=dorama",
+                    logo_30x30 = Icon.Folder
+                },
+                new ForkPlaylistItem()
+                {
                     title = "Мультфильмы",
                     playlist_url = $"{host}/fxml/cub?cat=movie&genre=16",
                     logo_30x30 = Icon.Folder
@@ -75,12 +81,6 @@ public class ForkController : BaseController
                 {
                     title = "Аниме",
                     playlist_url = $"{host}/fxml/cub?cat=anime",
-                    logo_30x30 = Icon.Folder
-                },
-                new ForkPlaylistItem()
-                {
-                    title = "Дорамы",
-                    playlist_url = $"{host}/fxml/cub?cat=dorama",
                     logo_30x30 = Icon.Folder
                 },
                 new ForkPlaylistItem()

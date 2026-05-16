@@ -4,6 +4,7 @@
 
 - Reviewed the existing `feat(ForkPlayer): Добавлен раздел Дорамы...` change.
 - Kept the ForkPlayer root menu focused on non-adult sections by removing the `Клубничка 18+` menu item from `/fxml`.
+- Kept the ForkPlayer XML `Дорамы` item directly after `Сериалы`, matching the Lampa menu order.
 - Hardened `/fxml/cub?cat=dorama` so direct TMDB Discover pagination works with TMDB's 20-item pages instead of CUB's 60-item pages.
 - Preserved extra CUB query filters such as `genre` and `without_genres` through cache keys, sorting links, and next-page links.
 
@@ -26,7 +27,7 @@
 
 ## Manual Regression Checklist
 
-1. Open `/fxml` in ForkPlayer and confirm `Дорамы` is visible.
+1. Open `/fxml` in ForkPlayer and confirm `Дорамы` is visible directly after `Сериалы`.
 2. Confirm `Клубничка 18+` is not visible in the ForkPlayer root menu.
 3. Open `/fxml/cub?cat=dorama` and confirm Korean drama rows are returned.
 4. Use the sort submenu on the Dorama list and confirm links still return Dorama rows.
