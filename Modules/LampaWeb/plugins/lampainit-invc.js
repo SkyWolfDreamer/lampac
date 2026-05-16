@@ -143,6 +143,7 @@ function lampacDoramaSections() {
 
 var LAMPAC_DORAMA_SOURCE_VERSION = '2026-05-16-expanded-sections';
 var lampacDoramaNetwork;
+var LAMPAC_DORAMA_MENU_ICON = '<svg class="lampac-dorama-menu-icon" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 8.5H31" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M19 8.5V30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M8 30H30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="12.5" cy="20" r="5" stroke="currentColor" stroke-width="3"/><path d="M25 14V26" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M25 20H31" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
 
 function lampacDoramaAddParam(url, param) {
   return url + (/\?/.test(url) ? '&' : '?') + param;
@@ -352,6 +353,7 @@ function getLampacDoramaAnchor() {
 }
 
 function bindLampacDoramaButton(button) {
+  button.find('.menu__ico').html(LAMPAC_DORAMA_MENU_ICON);
   button.off('hover:enter.lampac-dorama click.lampac-dorama');
   button.on('hover:enter.lampac-dorama click.lampac-dorama', function() {
     openLampacDoramaMenu();

@@ -21,6 +21,7 @@
 - `Последнее добавление` and `Новинки этого года` both require `first_air_date.lte=today`, so future/unreleased TMDB entries do not appear as already-added releases.
 - This avoids the CUB backend language-filter limitation: tmdb.cub.red accepts extra language parameters but still returns non-Korean results.
 - Both init paths are idempotent: they reuse an existing **Дорамы** button, remove duplicate buttons, and keep retrying briefly so late menu/plugin rendering cannot leave **Дорамы** at the bottom of the menu.
+- Both init paths force the Dorama menu button to use the dedicated Hangul-style inline SVG icon, including when an older in-memory button already exists with the old icon.
 - Both init paths now refresh an older in-memory `lampac_dorama` source if the page loaded stale code first, so `/lampainit.js` and `/sisi.js` cannot keep an old source that opens broken **Ещё** pages.
 - Dorama section rows preserve their original Discover URL and page metadata for **Ещё**. Rows mark themselves `nomore` when there is no next TMDB page.
 - **Ещё** intentionally follows the native **Сериалы/CUB** pattern: category rows keep a section URL, and the list loader opens that same URL with the requested `page` without falling back to page 1. This prevents a section **Ещё** action from reopening the first/full list.
@@ -48,8 +49,9 @@
 
 1. Open Lampa with source CUB.
 2. Open the left menu and confirm **Дорамы** appears directly after **Сериалы**.
-3. Select **Дорамы** and confirm it opens a sectioned screen titled **Дорамы**.
-4. Confirm the screen includes the core rows plus added genre/network rows such as `Комедийные дорамы`, `Криминальные`, `Детективы`, `Боевики`, `Фэнтези`, `Семейные`, `Мини-сериалы`, `Netflix`, `tvN`, and `JTBC` when TMDB returns rows for those sections.
-5. Open `Ещё` from at least `Новинки этого года` and one more Dorama section; confirm it opens Korean drama rows, not Lampa's empty state.
-6. Toggle SISI **Отображать в меню** off and confirm **Дорамы** remains visible while **Клубничка** is hidden.
-7. Reload Lampa and confirm only one **Дорамы** item appears.
+3. Confirm **Дорамы** uses the dedicated Hangul-style icon, not the TV icon or the old double-triangle placeholder.
+4. Select **Дорамы** and confirm it opens a sectioned screen titled **Дорамы**.
+5. Confirm the screen includes the core rows plus added genre/network rows such as `Комедийные дорамы`, `Криминальные`, `Детективы`, `Боевики`, `Фэнтези`, `Семейные`, `Мини-сериалы`, `Netflix`, `tvN`, and `JTBC` when TMDB returns rows for those sections.
+6. Open `Ещё` from at least `Новинки этого года` and one more Dorama section; confirm it opens Korean drama rows, not Lampa's empty state.
+7. Toggle SISI **Отображать в меню** off and confirm **Дорамы** remains visible while **Клубничка** is hidden.
+8. Reload Lampa and confirm only one **Дорамы** item appears.
