@@ -1066,35 +1066,65 @@
       });
     }
 
+    function getDoramaMenuAnchor() {
+      var items = $('.menu .menu__item');
+      var tv = items.filter('[data-action="tv"]').first();
+
+      if (tv.length) return tv;
+
+      return items.filter(function() {
+        return $(this).find('.menu__text').text().trim() == 'Сериалы';
+      }).first();
+    }
+
+    function bindDoramaMenuButton(button) {
+      button.off('hover:enter.lampac-dorama click.lampac-dorama');
+      button.on('hover:enter.lampac-dorama click.lampac-dorama', function() {
+        openDoramaMenu();
+      });
+    }
+
+    function createDoramaMenuButton() {
+      var button = $("<li class=\"menu__item selector\" data-action=\"dorama\">\n            <div class=\"menu__ico\"><img src=\"./img/icons/menu/tv.svg\" /></div>\n            <div class=\"menu__text\">Дорамы</div>\n        </li>");
+
+      bindDoramaMenuButton(button);
+
+      return button;
+    }
+
     function addDoramaMenuButton(attempt) {
-      if (window.lampac_dorama_menu_ready) return;
+      var anchor = getDoramaMenuAnchor();
 
-      var menu = $('.menu .menu__list').eq(0);
-      var tv = menu.find('[data-action="tv"]').first();
-
-      if (!menu.length || !tv.length) {
-        if ((attempt || 0) < 20) {
+      if (!anchor.length) {
+        if ((attempt || 0) < 40) {
           setTimeout(function() {
             addDoramaMenuButton((attempt || 0) + 1);
-          }, 500);
+          }, 250);
         }
 
         return;
       }
 
-      if (menu.find('[data-action="dorama"]').length) {
-        window.lampac_dorama_menu_ready = true;
-        return;
+      var existing = $('.menu .menu__item[data-action="dorama"]');
+      var button = existing.first();
+
+      existing.not(button).remove();
+
+      if (!button.length) {
+        button = createDoramaMenuButton();
+      } else {
+        bindDoramaMenuButton(button);
       }
 
-      var button = $("<li class=\"menu__item selector\" data-action=\"dorama\">\n            <div class=\"menu__ico\"><img src=\"./img/icons/menu/tv.svg\" /></div>\n            <div class=\"menu__text\">Дорамы</div>\n        </li>");
+      if (!button.prev().is(anchor)) {
+        anchor.after(button.detach());
+      }
 
-      button.on('hover:enter', function() {
-        openDoramaMenu();
-      });
-
-      tv.after(button);
-      window.lampac_dorama_menu_ready = true;
+      if ((attempt || 0) < 12) {
+        setTimeout(function() {
+          addDoramaMenuButton((attempt || 0) + 1);
+        }, 500);
+      }
     }
 
     function add() {

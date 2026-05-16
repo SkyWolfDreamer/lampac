@@ -13,7 +13,8 @@
 - The button opens category_full with source tmdb.
 - The URL is discover/tv?with_original_language=ko&with_genres=18&sort_by=popularity.desc.
 - This avoids the CUB backend language-filter limitation: tmdb.cub.red accepts extra language parameters but still returns non-Korean results.
-- A shared window.lampac_dorama_menu_ready guard prevents duplicates when both init paths are active.
+- Both init paths are idempotent: they reuse an existing **Дорамы** button, remove duplicate buttons, and keep retrying briefly so late menu/plugin rendering cannot leave **Дорамы** at the bottom of the menu.
+- For local Docker runtime overrides, mount specific plugin files such as `plugins/override/lampainit-invc.js` and `plugins/override/sisi.js`; overriding the full `lampainit.js` bypasses Lampac's normal init wrapper and can leave stale menu code cached for up to 10 minutes.
 
 ## Verification
 
@@ -23,6 +24,7 @@
 - git diff --check passed.
 - Direct smoke confirmed CUB ignores the Korean language filter on cat=tv.
 - Direct smoke confirmed the TMDB Discover TV Dorama query returns Korean drama rows.
+- Local Docker smoke confirmed /lampainit.js and /sisi.js both serve the idempotent Dorama placement code from the targeted overrides.
 
 ## Manual Regression Checklist
 
