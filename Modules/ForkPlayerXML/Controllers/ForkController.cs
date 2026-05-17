@@ -92,6 +92,16 @@ public class ForkController : BaseController
                 }
             };
 
+            if (CoreInit.modules?.Exists(i => i?.enable == true && i.name == "SISI") == true)
+            {
+                channels.Add(new ForkPlaylistItem()
+                {
+                    title = "Клубничка 18+",
+                    playlist_url = $"{host}/sisi",
+                    logo_30x30 = Icon.Adult
+                });
+            }
+
             return Json(new
             {
                 title = "Lampac",
